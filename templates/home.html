@@ -24,7 +24,16 @@ Home - Bite Buzz
             {% for car in featured_cars %}
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm">
-                    <img src="{{ car.image }}" alt="{{ car.make }} {{ car.model }}" class="card-img-top">
+                    {% if car['model'] == 'Margherita' %}
+                    <img src="{{ url_for('static', filename='img/pizza.jpeg') }}" class="card-img-top">
+
+                    {% elif car['model'] == 'White Sauce' %}
+                    <img src="{{ url_for('static', filename='img/Pasta.jpeg') }}" class="card-img-top">
+
+                    {% elif car['model'] == 'Cheeseburger' %}
+                    <img src="{{ url_for('static', filename='img/burger.jpeg') }}" class="card-img-top">
+
+                    {% endif %}
                     <div class="card-body">
                         <h5 class="card-title">{{ car.make }} {{ car.model }}</h5>
                         <p class="card-text">
