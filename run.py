@@ -11,5 +11,5 @@ app = create_app()
 
 if __name__ == '__main__':
     print("log:hello app started")
-    app.run(host='localhost', port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)
 
