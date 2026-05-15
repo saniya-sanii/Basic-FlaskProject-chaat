@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cart</title>
+</head>
+
+<body>
+
+    <h1>Table {{ table_no }} Cart</h1>
+
+    {% for item in cart %}
+
+        <div>
+
+            <h2>{{ item.name }}</h2>
+
+            <p>₹ {{ item.price }}</p>
+
+        </div>
+
+    {% endfor %}
+
+    <h2>Total: ₹ {{ total }}</h2>
+
+</body>
+
+</html>
