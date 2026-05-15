@@ -66,14 +66,67 @@
             <h2>{{ food.name }}</h2>
 
             <p>₹ {{ food.price }}</p>
+            <div class="cart-controls">
 
-            <button>Add To Cart</button>
+    <button onclick="decreaseItem('{{ loop.index0 }}')">-</button>
 
+    <span id="qty-{{ loop.index0 }}">0</span>
+
+    <button onclick="increaseItem('{{ loop.index0 }}')">+</button>
+
+</div>
         </div>
 
         {% endfor %}
 
-    </div>
+</div>
+
+<script>
+
+let cart = {}
+
+function increaseItem(id){
+
+    if(cart[id]){
+        cart[id]++
+    }
+    else{
+        cart[id] = 1
+    }
+
+    document.getElementById(`qty-${id}`).innerText = cart[id]
+
+    updateCart()
+}
+
+function decreaseItem(id){
+
+    if(cart[id] && cart[id] > 0){
+
+        cart[id]--
+
+        document.getElementById(`qty-${id}`).innerText = cart[id]
+
+        updateCart()
+    }
+}
+
+function updateCart(){
+
+    fetch('/update_cart', {
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body: JSON.stringify(cart)
+
+    })
+}
+
+</script>
 
 </body>
 </html>

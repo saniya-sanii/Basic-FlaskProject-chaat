@@ -7,21 +7,23 @@
 
 <body>
 
-    <h1>Table {{ table_no }} Cart</h1>
+<h1>Your Cart</h1>
 
-    {% for item in cart %}
+{% for item in cart_items %}
 
-        <div>
+<div>
 
-            <h2>{{ item.name }}</h2>
+    <img src="{{ url_for('static', filename=item.image) }}" width="150">
 
-            <p>₹ {{ item.price }}</p>
+    <h2>{{ item.name }} ×{{ item.qty }}</h2>
 
-        </div>
+    <p>₹ {{ item.subtotal }}</p>
 
-    {% endfor %}
+</div>
 
-    <h2>Total: ₹ {{ total }}</h2>
+{% endfor %}
+
+<h1>Total: ₹ {{ total }}</h1>
 
 </body>
 
