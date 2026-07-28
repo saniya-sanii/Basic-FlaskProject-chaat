@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% set active = "Admin" %}
+
+{% block title %}Edit Dish — Bite Buzz{% endblock %}
+
+{% block body_class %}dark-dashboard-container{% endblock %}
+{% block header_class %}dark-navbar{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="text-muted small font-weight-bold text-uppercase d-block mb-1" style="letter-spacing: 0.5px;">MENU CONTROL DECK</span>
+                <h1 class="font-weight-extrabold mb-1 text-white" style="font-weight: 800; font-size: 2rem;">Edit Food Dish</h1>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-sm" style="border-radius: 8px; border-color: rgba(255,255,255,0.15);">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Back to Dashboard
+            </a>
+        </div>
+        
+        <!-- Edit Card Form -->
+        <div class="dark-dashboard-card">
+            <form action="{{ url_for('edit_food', id=food.id) }}" method="POST" enctype="multipart/form-data">
+                
+                <!-- Display Current Image Preview -->
+                <div class="text-center mb-4 p-3" style="background: rgba(0,0,0,0.2); border-radius: 12px;">
+                    <span class="text-muted small d-block mb-2 font-weight-bold">Current Dish Photo</span>
+                    <img src="{{ url_for('static', filename=food.image) }}" alt="{{ food.name }}" style="width: 150px; height: 150px; object-fit: cover; border-radius: var(--border-radius-md); box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                </div>
+                
+                <!-- Name -->
+                <div class="form-group mb-3">
+                    <label for="name" class="font-weight-bold text-muted small">Dish Name</label>
+                    <input type="text" class="form-control dark-form-control py-4" id="name" name="name" value="{{ food.name }}" required>
+                </div>
+                
+                <!-- Price and Category -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="price" class="font-weight-bold text-muted small">Price (₹)</label>
+                            <input type="number" class="form-control dark-form-control py-4" id="price" name="price" value="{{ food.price }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="category" class="font-weight-bold text-muted small">Category</label>
+                            <select class="form-control dark-form-control h-auto py-2" id="category" name="category" required style="height: 48px !important;">
+                                <option value="Starters" {% if food.category == 'Starters' %}selected{% endif %}>Starters</option>
+                                <option value="Main Course" {% if food.category == 'Main Course' %}selected{% endif %}>Main Course</option>
+                                <option value="Fast Food" {% if food.category == 'Fast Food' %}selected{% endif %}>Fast Food</option>
+                                <option value="Drinks" {% if food.category == 'Drinks' %}selected{% endif %}>Drinks</option>
+                                <option value="Desserts" {% if food.category == 'Desserts' %}selected{% endif %}>Desserts</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Image Upload (Optional Replacement) -->
+                <div class="form-group mb-3">
+                    <label for="image" class="font-weight-bold text-muted small">Replace Food Image (Optional)</label>
+                    <input type="file" class="form-control-file dark-form-control p-2 w-100" id="image" name="image" accept="image/*">
+                    <small class="text-muted mt-1 d-block"><i class="fa-solid fa-info-circle mr-1"></i> Leave empty to keep the current image photo.</small>
+                </div>
+                
+                <!-- Description -->
+                <div class="form-group mb-4">
+                    <label for="description" class="font-weight-bold text-muted small">Dish Description</label>
+                    <textarea class="form-control dark-form-control" id="description" name="description" rows="3" required>{{ food.description }}</textarea>
+                </div>
+                
+                <!-- Availability Checkbox Toggle -->
+                <div class="form-group mb-4 pl-1">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="availableSwitch" name="available" {% if food.available %}checked{% endif %}>
+                        <label class="custom-control-label text-white font-weight-bold" for="availableSwitch" style="cursor: pointer;">
+                            Mark as Available (Toggles "Out of Stock" status on Customer Menu)
+                        </label>
+                    </div>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.08);">
+                
+                <!-- Form Submission Buttons -->
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light py-2 px-4 mr-3" style="border-radius: 8px; border-color: rgba(255,255,255,0.15);">Cancel</a>
+                    <button type="submit" class="btn btn-primary py-2 px-5">Save Changes</button>
+                </div>
+                
+            </form>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

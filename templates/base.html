@@ -1,66 +1,96 @@
-<!-- Pruthviraj Mundargi pm935@drexel.edu -->
-<!-- CS530: DUI, Assignment 1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{% block title %}Bite Buzz{% endblock %}</title>
-    <link rel="stylesheet" href="/static/lib/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/car_icon.ico') }}">
-    <script src="/static/lib/jquery/jquery.min.js"></script>
-    <script src="/static/lib/popper/popper.min.js"></script>
-    <script src="/static/lib/bootstrap/bootstrap.min.js"></script>
+    <title>{% block title %}Bite Buzz — Smart Ordering{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/bootstrap/bootstrap.min.css') }}">
+    <!-- Custom Design CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/bite buzz.logo.png') }}">
     
     {% block header %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
-<header>
+<header class="{% block header_class %}{% endblock %}">
     <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="/">
-                <!-- SVG icon -->
-             Bite Buzz 🍕
-                
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <span style="font-size: 1.8rem;">🍕</span> Bite Buzz
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item{% if active == 'Home' %} active{% endif %}">
-                        <a class="nav-link" href="/">Home</a>
+                    <li class="nav-item {% if active == 'Home' %}active{% endif %}">
+                        <a class="nav-link" href="{{ url_for('home') }}"><i class="fa-solid fa-house mr-1"></i> Home</a>
                     </li>
-                    <li class="nav-item{% if active == 'Inventory' %} active{% endif %}">
-                        <a class="nav-link" href="/inventory">Inventory</a>
+                    <li class="nav-item {% if active == 'Menu' %}active{% endif %}">
+                        {% if session.get('table_no') %}
+                            <a class="nav-link" href="{{ url_for('menu', table_no=session.get('table_no')) }}"><i class="fa-solid fa-utensils mr-1"></i> Menu</a>
+                        {% else %}
+                            <a class="nav-link" href="{{ url_for('menu', table_no=1) }}"><i class="fa-solid fa-utensils mr-1"></i> Menu</a>
+                        {% endif %}
                     </li>
-                    <li class="nav-item{% if active == 'About' %} active{% endif %}">
-                        <a class="nav-link" href="/about">About Us</a>
+                    <li class="nav-item {% if active == 'Cart' %}active{% endif %}">
+                        <a class="nav-link" href="{{ url_for('cart_page') }}"><i class="fa-solid fa-shopping-cart mr-1"></i> Cart</a>
                     </li>
-                    <li class="nav-item{% if active == 'Login' %} active{% endif %}">
-                        <a class="nav-link" href="/login">Admin Login</a>
-                    </li>
+                    {% if session.get('admin_logged_in') %}
+                        <li class="nav-item {% if active == 'Admin' %}active{% endif %}">
+                            <a class="nav-link text-primary" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-dashboard mr-1"></i> Kitchen Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket mr-1"></i> Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item {% if active == 'Login' %}active{% endif %}">
+                            <a class="nav-link" href="{{ url_for('login') }}"><i class="fa-solid fa-lock mr-1"></i> Chef Login</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </nav>
     </div>
 </header>
 
+<!-- Flash Messages -->
+<div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show border-0 shadow-sm" role="alert" style="border-radius: var(--border-radius-sm);">
+                    <strong>{{ 'Notice' if category == 'info' else category | capitalize }}:</strong> {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
 <main role="main" class="container">
     {% block content %}{% endblock %}
 </main>
 
-<footer class="text-muted py-4">
-    <div class="container">
-        <p class="float-right mb-1">
-            <a href="#">Back to top</a>
-        </p>
-        <p class="mb-1">© 2026 Bite Buzz. All rights reserved.</p>
+<footer class="py-4 mt-auto">
+    <div class="container text-center">
+        <p class="mb-1 text-muted">© 2026 <strong>Bite Buzz</strong>. Digital Restaurant Ecosystem. All rights reserved.</p>
+        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Designed for premium contactless dining & real-time kitchen tracking.</p>
     </div>
 </footer>
+
+<!-- Bootstrap and JS Support -->
+<script src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/popper/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='lib/bootstrap/bootstrap.min.js') }}"></script>
+
 {% block scripts %}{% endblock %}
 </body>
 </html>
-

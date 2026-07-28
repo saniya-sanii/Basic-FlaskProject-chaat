@@ -1,128 +1,228 @@
-<!DOCTYPE html>
-<html>
+{% extends 'base.html' %}
+{% set active = "Menu" %}
 
-<head>
-    <title>Restaurant Menu</title>
+{% block title %}Table {{ table_no }} Menu — Bite Buzz{% endblock %}
 
-    <style>
+{% block header %}
+<style>
+    /* Custom menu CSS adjustments for smooth layout */
+    .menu-header-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-subtle);
+        border: 1px solid rgba(255, 90, 44, 0.05);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .table-indicator {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 800;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 12px rgba(255, 90, 44, 0.2);
+    }
+</style>
+{% endblock %}
 
-        body{
-            font-family: Arial;
-            background:#f5f5f5;
-            padding:20px;
-        }
+{% block content %}
 
-        h1{
-            text-align:center;
-        }
+<!-- Menu Header Card -->
+<div class="menu-header-card">
+    <div>
+        <h1 class="mb-1" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--text-primary);">
+            Welcome to Bite Buzz 🍕
+        </h1>
+        <p class="text-muted mb-0"><i class="fa-solid fa-clock mr-1"></i> Kitchen is Open • Serving fresh hot dishes</p>
+    </div>
+    <div class="table-indicator">
+        <i class="fa-solid fa-chair mr-1"></i> Table {{ table_no }}
+    </div>
+</div>
 
-        .container{
-            display:flex;
-            gap:20px;
-            flex-wrap:wrap;
-            justify-content:center;
-        }
-
-        .card{
-            background:white;
-            width:250px;
-            border-radius:10px;
-            padding:15px;
-            box-shadow:0px 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .card img{
-            width:100%;
-            height:180px;
-            object-fit:cover;
-            border-radius:10px;
-        }
-
-        button{
-            background:black;
-            color:white;
-            padding:10px;
-            border:none;
-            border-radius:5px;
-            width:100%;
-            cursor:pointer;
-        }
-
-    </style>
-</head>
-
-<body>
-
-    <h1>Table {{ table_no }} Menu</h1>
-
+<!-- Sticky Category Tabs -->
+<div class="sticky-category-nav shadow-sm">
     <div class="container">
-
-        {% for food in foods %}
-
-        <div class="card">
-
-            <img src="{{ url_for('static', filename=food.image) }}" alt="food">
-
-            <h2>{{ food.name }}</h2>
-
-            <p>₹ {{ food.price }}</p>
-            <div class="cart-controls">
-
-    <button onclick="decreaseItem('{{ loop.index0 }}')">  -  Add to cart +   </button>
-
-</div>
-        </div>
-
+        {% for cat in categories %}
+            <a href="#cat-{{ cat | replace(' ', '-') }}" class="category-tab {% if loop.first %}active{% endif %}" onclick="setActiveTab(this)">
+                {{ cat }}
+            </a>
         {% endfor %}
-
+    </div>
 </div>
 
+<!-- Categories and Food Cards Grid -->
+<div class="menu-sections">
+    {% for cat in categories %}
+        <div id="cat-{{ cat | replace(' ', '-') }}" class="category-section mb-5" style="scroll-margin-top: 140px;">
+            <div class="mb-4">
+                <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; border-left: 5px solid var(--primary-color); padding-left: 12px;">
+                    {{ cat }}
+                </h2>
+                <p class="text-muted" style="font-size: 0.9rem;">Freshly prepared {{ cat | lower }} served hot</p>
+            </div>
+            
+            <div class="row">
+                {% for food in foods_by_category[cat] %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card-premium food-card">
+                            <div class="food-img-wrapper">
+                                <img src="{{ url_for('static', filename=food.image) }}" alt="{{ food.name }}">
+                                <span class="category-badge">{{ food.category }}</span>
+                                {% if not food.available %}
+                                    <span class="availability-badge">Out of Stock</span>
+                                {% endif %}
+                            </div>
+                            <div class="food-info">
+                                <h3 class="food-title">{{ food.name }}</h3>
+                                <p class="food-desc">{{ food.description }}</p>
+                                <div class="food-footer">
+                                    <span class="food-price">₹{{ food.price }}</span>
+                                    
+                                    {% if food.available %}
+                                        <!-- Interactive Adder Button -->
+                                        <div class="cart-controls-wrapper" data-food-id="{{ food.id }}" data-price="{{ food.price }}" data-name="{{ food.name }}">
+                                            <button class="add-cart-btn" onclick="addToCart({{ food.id }})" id="add-btn-{{ food.id }}">
+                                                <i class="fa-solid fa-plus mr-1"></i> ADD
+                                            </button>
+                                            
+                                            <div class="qty-controller d-none" id="qty-ctrl-{{ food.id }}">
+                                                <button class="qty-btn" onclick="decrementCart({{ food.id }})">−</button>
+                                                <span class="qty-count" id="qty-count-{{ food.id }}">0</span>
+                                                <button class="qty-btn" onclick="incrementCart({{ food.id }})">+</button>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <button class="btn btn-secondary btn-sm" disabled style="border-radius: var(--border-radius-sm); font-weight: 700; height: 38px;">UNAVAILABLE</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Floating bottom cart bar -->
+<div class="floating-cart-bar" id="floatingCart">
+    <div class="floating-cart-info">
+        <span class="floating-cart-count" id="cartCountLabel">0 ITEMS</span>
+        <span class="floating-cart-total" id="cartTotalLabel">₹0</span>
+    </div>
+    <a href="{{ url_for('cart_page') }}" class="floating-cart-btn">
+        View Cart <i class="fa-solid fa-arrow-right"></i>
+    </a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
+// Load existing cart from Flask session
+let cart = {};
+{% for k, v in cart.items() %}
+    cart[{{ k }}] = {{ v }};
+{% endfor %}
 
-let cart = {}
+// Initialize UI states on load
+document.addEventListener("DOMContentLoaded", function() {
+    updateUI();
+});
 
-function increaseItem(id){
-
-    if(cart[id]){
-        cart[id]++
-    }
-    else{
-        cart[id] = 1
-    }
-
-    document.getElementById(`qty-${id}`).innerText = cart[id]
-
-    updateCart()
+// Category active tab tracking on click
+function setActiveTab(element) {
+    document.querySelectorAll(".category-tab").forEach(tab => tab.classList.remove("active"));
+    element.classList.add("active");
 }
 
-function decreaseItem(id){
+// Add Item for the first time
+function addToCart(foodId) {
+    cart[foodId] = 1;
+    updateUI();
+    syncCartWithSession();
+}
 
-    if(cart[id] && cart[id] > 0){
+// Increment Item Quantity
+function incrementCart(foodId) {
+    cart[foodId]++;
+    updateUI();
+    syncCartWithSession();
+}
 
-        cart[id]--
+// Decrement Item Quantity
+function decrementCart(foodId) {
+    if (cart[foodId] > 0) {
+        cart[foodId]--;
+        if (cart[foodId] === 0) {
+            delete cart[foodId];
+        }
+    }
+    updateUI();
+    syncCartWithSession();
+}
 
-        document.getElementById(`qty-${id}`).innerText = cart[id]
-
-        updateCart()
+// Update UI Quantities and Floating Bar
+function updateUI() {
+    let totalItems = 0;
+    let totalAmount = 0;
+    
+    // Update individual food cards
+    document.querySelectorAll(".cart-controls-wrapper").forEach(wrapper => {
+        const foodId = parseInt(wrapper.getAttribute("data-food-id"));
+        const price = parseInt(wrapper.getAttribute("data-price"));
+        const addBtn = document.getElementById(`add-btn-${foodId}`);
+        const qtyCtrl = document.getElementById(`qty-ctrl-${foodId}`);
+        const qtyCount = document.getElementById(`qty-count-${foodId}`);
+        
+        if (cart[foodId] && cart[foodId] > 0) {
+            // Show qty controller, hide ADD btn
+            addBtn.classList.add("d-none");
+            qtyCtrl.classList.remove("d-none");
+            qtyCount.innerText = cart[foodId];
+            
+            totalItems += cart[foodId];
+            totalAmount += cart[foodId] * price;
+        } else {
+            // Show ADD btn, hide qty controller
+            addBtn.classList.remove("d-none");
+            qtyCtrl.classList.add("d-none");
+        }
+    });
+    
+    // Update floating cart bar
+    const floatingCart = document.getElementById("floatingCart");
+    if (totalItems > 0) {
+        floatingCart.classList.add("show");
+        document.getElementById("cartCountLabel").innerText = `${totalItems} ITEM${totalItems > 1 ? 'S' : ''}`;
+        document.getElementById("cartTotalLabel").innerText = `₹${totalAmount}`;
+    } else {
+        floatingCart.classList.remove("show");
     }
 }
 
-function updateCart(){
-
-    fetch('/update_cart', {
-
-        method:'POST',
-
-        headers:{
-            'Content-Type':'application/json'
+// Sync cart with backend Flask session
+function syncCartWithSession() {
+    fetch("{{ url_for('update_cart') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
         },
-
         body: JSON.stringify(cart)
-
     })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            console.error("Cart sync failed:", data.message);
+        }
+    })
+    .catch(err => console.error("Error syncing cart:", err));
 }
-
 </script>
-
-</body>
-</html>
+{% endblock %}

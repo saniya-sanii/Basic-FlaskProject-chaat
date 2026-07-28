@@ -1,63 +1,84 @@
-<!-- Pruthviraj Mundargi pm935@drexel.edu -->
-<!-- Saivinay Rayala sr3674@drexel.edu -->
-<!-- CS530: DUI, Assignment 1 -->
 {% extends 'base.html' %}
 {% set active = "Home" %}
 
-{% block title %}
-Home - Bite Buzz
-{% endblock %}
+{% block title %}Bite Buzz — Premium QR Table Dining{% endblock %}
 
 {% block content %}
 
-<section class="jumbotron text-center">
-    <div class="container">
-        <h1 class="jumbotron-heading">Welcome to Bite Buzz</h1>
-        <p class="lead text-muted">Crafted Dishes With The Finest Ingredients.</p>
-    </div>
-</section>
-
-<section class="featured-cars mt-4">
-    <div class="container">
-        <h2>Explore Our Dishes</h2>
-        <div class="row">
-            {% for car in featured_cars %}
-            <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
-                    {% if car['model'] == 'Margherita' %}
-                    <img src="{{ url_for('static', filename='img/Pizza Margherita.png') }}" class="card-img-top">
-
-                    {% elif car['model'] == 'White Sauce' %}
-                    <img src="{{ url_for('static', filename='img/White Sauce Pasta.png') }}" class="card-img-top">
-
-                    {% elif car['model'] == 'Cheeseburger' %}
-                    <img src="{{ url_for('static', filename='img/Cheeseburger.png') }}" class="card-img-top">
-
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ car.make }} {{ car.model }}</h5>
-                        <p class="card-text">
-                            Dish: {{ car['model'] }}<br>
-                            Categories: {{ car['body_styles'] | safe }}<br>
-                            Year: {{ car['year'] }}₹<br>
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group">
-                                <a href="{{ url_for('car_details', car_id=car['id']) }}" class="btn btn-sm btn-outline-secondary">View Details</a>
-                                <a href="{{ url_for('book_test_drive', car_id=car.id) }}" class="btn btn-sm btn-outline-secondary">Book Test Drive</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <p>No featured cars available at the moment.</p>
-            {% endfor %}
+<!-- Hero Banner -->
+<section class="py-5 text-center" style="background: linear-gradient(135deg, rgba(255, 90, 44, 0.04) 0%, rgba(255, 183, 3, 0.04) 100%); border-radius: var(--border-radius-lg); margin-bottom: 3rem; border: 1px solid rgba(255, 90, 44, 0.05);">
+    <div class="container py-4">
+        <span class="badge mb-3" style="background: rgba(255, 90, 44, 0.1); color: var(--primary-color); font-weight: 800; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.85rem;">DIGITAL SMART DINING</span>
+        <h1 class="display-4 font-weight-extrabold" style="font-family: 'Outfit', sans-serif; letter-spacing: -1px; font-weight: 800;">
+            Zero Contact. <span class="text-primary">Instant Taste.</span>
+        </h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px; font-size: 1.1rem; line-height: 1.6;">
+            Scan the QR code at your table, browse our freshly crafted dishes, add them to your cart, and place orders directly to the kitchen. No waiting, no hassle!
+        </p>
+        <div class="mt-4">
+            <a href="#table-simulator" class="btn btn-primary btn-lg"><i class="fa-solid fa-qrcode mr-2"></i> Simulate QR Ordering</a>
         </div>
     </div>
 </section>
 
-{% include 'about_section.html' %}
+<!-- Table QR Code Simulator -->
+<section id="table-simulator" class="mb-5 py-2">
+    <div class="text-center mb-4">
+        <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700;">Table QR Code Simulator</h2>
+        <p class="text-muted">In a real restaurant, each table has a unique QR code. Click on any table below to simulate scanning its QR code:</p>
+    </div>
+    
+    <div class="row justify-content-center">
+        {% for table in range(1, 9) %}
+        <div class="col-6 col-sm-4 col-md-3 mb-4">
+            <a href="{{ url_for('menu', table_no=table) }}" class="table-sim-btn">
+                <div class="table-sim-num">Table {{ table }}</div>
+                <div class="text-muted" style="font-size: 0.8rem;">
+                    <i class="fa-solid fa-qrcode mr-1"></i> Scan QR
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Trending/Featured Items -->
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 0.2rem;">Our Chef's Specials</h2>
+            <p class="text-muted mb-0">Crafted dishes made with the finest fresh ingredients.</p>
+        </div>
+        <a href="{{ url_for('menu', table_no=1) }}" class="btn btn-outline-primary btn-sm">See Full Menu <i class="fa-solid fa-arrow-right ml-1"></i></a>
+    </div>
+    
+    <div class="row">
+        {% for food in featured_foods %}
+        <div class="col-md-4 mb-4">
+            <div class="card-premium food-card">
+                <div class="food-img-wrapper">
+                    <img src="{{ url_for('static', filename=food.image) }}" alt="{{ food.name }}">
+                    <span class="category-badge">{{ food.category }}</span>
+                    {% if not food.available %}
+                        <span class="availability-badge">Out of Stock</span>
+                    {% endif %}
+                </div>
+                <div class="food-info">
+                    <h3 class="food-title">{{ food.name }}</h3>
+                    <p class="food-desc">{{ food.description }}</p>
+                    <div class="food-footer">
+                        <span class="food-price">₹{{ food.price }}</span>
+                        <a href="{{ url_for('menu', table_no=1) }}" class="btn btn-sm btn-outline-primary">Order Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-4">
+            <p class="text-muted">No specials available currently.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 
 {% endblock %}
-

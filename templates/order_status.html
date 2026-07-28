@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% set active = "Menu" %}
+
+{% block title %}Order Tracking #{{ order.id }} — Bite Buzz{% endblock %}
+
+{% block header %}
+<style>
+    .status-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-subtle);
+        border: 1px solid rgba(255, 90, 44, 0.05);
+        padding: 2.5rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .status-badge-lg {
+        font-size: 1.1rem;
+        font-weight: 800;
+        padding: 0.6rem 1.4rem;
+        border-radius: 50px;
+        text-transform: uppercase;
+        display: inline-block;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .order-details-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-subtle);
+        border: 1px solid rgba(255, 90, 44, 0.05);
+        padding: 2rem;
+    }
+    .order-detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .order-detail-row:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        
+        <!-- Live Status Heading Card -->
+        <div class="status-card">
+            <span class="text-muted small font-weight-bold" style="letter-spacing: 1px; text-transform: uppercase;">
+                Order #{{ order.id }} • Table {{ order.table_number }}
+            </span>
+            <h1 class="font-weight-extrabold mt-2 mb-3" style="font-family: 'Outfit', sans-serif; font-weight: 800;" id="statusHeader">
+                {% if order.status == 'Pending' %}
+                    Order Sent to Kitchen!
+                {% elif order.status == 'Preparing' %}
+                    Our Chef is Preparing Your Food!
+                {% elif order.status == 'Ready' %}
+                    Your Food is Hot & Ready!
+                {% elif order.status == 'Served' %}
+                    Food is Served! Enjoy!
+                {% endif %}
+            </h1>
+            
+            <!-- Real-time Status Badge -->
+            <div id="statusBadgeContainer">
+                {% if order.status == 'Pending' %}
+                    <span class="status-badge-lg badge-pending"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Pending Approval</span>
+                {% elif order.status == 'Preparing' %}
+                    <span class="status-badge-lg badge-preparing"><i class="fa-solid fa-fire-burner fa-bounce mr-1"></i> Cooking in Kitchen</span>
+                {% elif order.status == 'Ready' %}
+                    <span class="status-badge-lg badge-ready"><i class="fa-solid fa-bell-concierge fa-shake mr-1"></i> Ready to Serve</span>
+                {% elif order.status == 'Served' %}
+                    <span class="status-badge-lg badge-served"><i class="fa-solid fa-circle-check mr-1"></i> Served & Completed</span>
+                {% endif %}
+            </div>
+            
+            <!-- Status Timeline Stepper -->
+            <div class="status-stepper" id="stepper">
+                {% set status_val = 0 %}
+                {% if order.status == 'Pending' %}{% set status_val = 1 %}
+                {% elif order.status == 'Preparing' %}{% set status_val = 2 %}
+                {% elif order.status == 'Ready' %}{% set status_val = 3 %}
+                {% elif order.status == 'Served' %}{% set status_val = 4 %}
+                {% endif %}
+                
+                <div class="status-progress-bar" id="progressBar" style="width: {{ (status_val - 1) * 33.33 }}%;"></div>
+                
+                <!-- Step 1: Pending -->
+                <div class="step-node {% if status_val >= 1 %}active{% endif %} {% if status_val > 1 %}completed{% endif %}" id="step-1">
+                    <div class="step-icon-wrapper">
+                        {% if status_val > 1 %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-receipt"></i>{% endif %}
+                    </div>
+                    <div class="step-label">Placed</div>
+                </div>
+                
+                <!-- Step 2: Preparing -->
+                <div class="step-node {% if status_val >= 2 %}active{% endif %} {% if status_val > 2 %}completed{% endif %}" id="step-2">
+                    <div class="step-icon-wrapper">
+                        {% if status_val > 2 %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-utensils"></i>{% endif %}
+                    </div>
+                    <div class="step-label">Cooking</div>
+                </div>
+                
+                <!-- Step 3: Ready -->
+                <div class="step-node {% if status_val >= 3 %}active{% endif %} {% if status_val > 3 %}completed{% endif %}" id="step-3">
+                    <div class="step-icon-wrapper">
+                        {% if status_val > 3 %}<i class="fa-solid fa-check"></i>{% else %}<i class="fa-solid fa-concierge-bell"></i>{% endif %}
+                    </div>
+                    <div class="step-label">Ready</div>
+                </div>
+                
+                <!-- Step 4: Served -->
+                <div class="step-node {% if status_val >= 4 %}active completed{% endif %}" id="step-4">
+                    <div class="step-icon-wrapper">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="step-label">Served</div>
+                </div>
+            </div>
+            
+            <p class="text-muted small mb-0"><i class="fa-solid fa-rotate mr-1 fa-spin"></i> Tracking active status in real-time. No need to reload.</p>
+        </div>
+        
+        <!-- Order Items Receipts -->
+        <div class="order-details-card mb-4">
+            <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 1.5rem;">Ordered Items</h3>
+            
+            {% for item in items %}
+            <div class="order-detail-row align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" width="45" height="45" style="border-radius: 8px; object-fit: cover;" class="mr-3">
+                    <div>
+                        <strong class="text-primary">{{ item.name }}</strong>
+                        <span class="text-muted small d-block">Quantity: {{ item.quantity }}</span>
+                    </div>
+                </div>
+                <strong class="h6 mb-0">₹{{ item.price * item.quantity }}</strong>
+            </div>
+            {% endfor %}
+            
+            <hr>
+            
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="h5 font-weight-bold mb-0">Grand Total</span>
+                <span class="h4 font-weight-extrabold text-primary mb-0" style="font-weight: 800;">₹{{ order.total_price }}</span>
+            </div>
+        </div>
+        
+        <!-- Back to Menu button -->
+        <div class="text-center">
+            <a href="{{ url_for('menu', table_no=order.table_number) }}" class="btn btn-outline-primary py-2 px-4">
+                <i class="fa-solid fa-utensils mr-2"></i> Order More Food
+            </a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Real-time Status Polling
+const orderId = {{ order.id }};
+
+function pollOrderStatus() {
+    // We will call the standard endpoint to get order status
+    // In our backend, let's create a tiny JSON endpoint or just fetch it
+    fetch(`/order_status/${orderId}`)
+    .then(res => res.text())
+    .parseHtml = (htmlString) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        
+        // Extract status elements and swap
+        const headerText = doc.getElementById("statusHeader").innerHTML;
+        const badgeContainerHtml = doc.getElementById("statusBadgeContainer").innerHTML;
+        const stepperHtml = doc.getElementById("stepper").innerHTML;
+        
+        document.getElementById("statusHeader").innerHTML = headerText;
+        document.getElementById("statusBadgeContainer").innerHTML = badgeContainerHtml;
+        document.getElementById("stepper").innerHTML = stepperHtml;
+    };
+    
+    // We can just query a clean api or fetch the whole page and update segments!
+    // Fetching the page and updating segments is exceptionally robust and keeps logic in templates!
+    fetch(`/order_status/${orderId}`)
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        
+        const header = doc.getElementById("statusHeader").innerHTML;
+        const badge = doc.getElementById("statusBadgeContainer").innerHTML;
+        const stepper = doc.getElementById("stepper").innerHTML;
+        
+        document.getElementById("statusHeader").innerHTML = header;
+        document.getElementById("statusBadgeContainer").innerHTML = badge;
+        document.getElementById("stepper").innerHTML = stepper;
+    })
+    .catch(err => console.error("Error polling order status:", err));
+}
+
+// Poll every 4 seconds
+setInterval(pollOrderStatus, 4000);
+</script>
+{% endblock %}

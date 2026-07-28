@@ -1,30 +1,256 @@
-<!DOCTYPE html>
-<html>
+{% extends 'base.html' %}
+{% set active = "Cart" %}
 
-<head>
-    <title>Cart</title>
-</head>
+{% block title %}Checkout Cart — Bite Buzz{% endblock %}
 
-<body>
+{% block header %}
+<style>
+    .cart-card {
+        background: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-subtle);
+        border: 1px solid rgba(255, 90, 44, 0.05);
+        overflow: hidden;
+    }
+    .cart-header {
+        background: rgba(255, 90, 44, 0.03);
+        border-bottom: 1px solid rgba(255, 90, 44, 0.08);
+        padding: 1.5rem;
+    }
+    .cart-item-row {
+        display: flex;
+        align-items: center;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        transition: var(--transition-smooth);
+    }
+    .cart-item-row:hover {
+        background: rgba(255, 90, 44, 0.01);
+    }
+    .cart-item-img {
+        width: 70px;
+        height: 70px;
+        border-radius: 12px;
+        object-fit: cover;
+        margin-right: 1.2rem;
+    }
+    .cart-item-details {
+        flex-grow: 1;
+    }
+    .cart-item-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 0.2rem;
+    }
+    .cart-item-price {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    .cart-item-subtotal {
+        font-weight: 800;
+        font-size: 1.15rem;
+        width: 100px;
+        text-align: right;
+    }
+    .instruction-input {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--border-radius-sm);
+        padding: 0.75rem 1rem;
+        transition: var(--transition-smooth);
+        resize: none;
+    }
+    .instruction-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(255, 90, 44, 0.15);
+        outline: none;
+        background: white;
+    }
+</style>
+{% endblock %}
 
-<h1>Your Cart</h1>
-
-{% for item in cart_items %}
-
-<div>
-
-    <img src="{{ url_for('static', filename=item.image) }}" width="150">
-
-    <h2>{{ item.name }} ×{{ item.qty }}</h2>
-
-    <p>₹ {{ item.subtotal }}</p>
-
+{% block content %}
+<div class="row">
+    <!-- Cart Items Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="cart-card">
+            <div class="cart-header d-flex justify-content-between align-items-center">
+                <h2 class="mb-0" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem;">
+                    Your Order Summary
+                </h2>
+                <span class="badge badge-warning py-2 px-3 status-badge" style="font-size: 0.85rem;">
+                    <i class="fa-solid fa-chair mr-1"></i> Table {{ table_no }}
+                </span>
+            </div>
+            
+            <div class="cart-items-list" id="cartItemsList">
+                {% for item in cart_items %}
+                    <div class="cart-item-row" id="cart-item-row-{{ item.id }}">
+                        <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" class="cart-item-img">
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">{{ item.name }}</div>
+                            <div class="cart-item-price">₹{{ item.price }} per unit</div>
+                        </div>
+                        
+                        <!-- Stepper Control in Cart -->
+                        <div class="mr-4">
+                            <div class="qty-controller">
+                                <button class="qty-btn" onclick="decrementCartItem({{ item.id }}, {{ item.price }})">−</button>
+                                <span class="qty-count" id="cart-qty-{{ item.id }}">{{ item.qty }}</span>
+                                <button class="qty-btn" onclick="incrementCartItem({{ item.id }}, {{ item.price }})">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="cart-item-subtotal" id="subtotal-{{ item.id }}">
+                            ₹{{ item.subtotal }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <span style="font-size: 4rem;">🛒</span>
+                        <h3 class="mt-3 font-weight-bold" style="font-family: 'Outfit', sans-serif;">Your Cart is Empty</h3>
+                        <p class="text-muted">Browse our delicious menu and add items to place your table order.</p>
+                        <a href="{{ url_for('menu', table_no=table_no) }}" class="btn btn-primary mt-3">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Menu
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        {% if cart_items %}
+            <!-- Continue Adding More Link -->
+            <div class="mt-3">
+                <a href="{{ url_for('menu', table_no=table_no) }}" class="btn btn-outline-primary btn-block py-2">
+                    <i class="fa-solid fa-plus mr-1"></i> Add More Items to Order
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Cart Summary Sidebar -->
+    {% if cart_items %}
+    <div class="col-lg-4 mb-4">
+        <form action="{{ url_for('place_order') }}" method="POST">
+            <input type="hidden" name="table_number" value="{{ table_no }}">
+            
+            <div class="cart-card p-4">
+                <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 1.5rem;">Bill Details</h3>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Item Subtotal</span>
+                    <span class="font-weight-bold" id="billSubtotal">₹{{ total }}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">CGST & SGST (5%)</span>
+                    <span class="text-muted">Inclusive</span>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="h5 font-weight-bold mb-0">Grand Total</span>
+                    <span class="h4 font-weight-extrabold text-primary mb-0" id="billTotal" style="font-weight: 800;">₹{{ total }}</span>
+                </div>
+                
+                <!-- Cooking Instructions -->
+                <div class="form-group mb-4">
+                    <label for="instructions" class="font-weight-bold text-muted small" style="letter-spacing: 0.5px; text-transform: uppercase;">Cooking Instructions (Optional)</label>
+                    <textarea class="form-control instruction-input" id="instructions" name="instructions" rows="2" placeholder="e.g. Make it extra spicy, no onions, bring extra spoons..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block btn-lg py-3">
+                    Place Order <i class="fa-solid fa-paper-plane ml-2"></i>
+                </button>
+                
+                <p class="text-center text-muted small mt-3 mb-0">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Placed orders go directly to our chef.
+                </p>
+            </div>
+        </form>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
 
+{% block scripts %}
+<script>
+// Local cart copy for dynamic updates
+let cart = {};
+{% for item in cart_items %}
+    cart[{{ item.id }}] = {{ item.qty }};
 {% endfor %}
 
-<h1>Total: ₹ {{ total }}</h1>
+// Increment item in checkout
+function incrementCartItem(foodId, price) {
+    cart[foodId]++;
+    document.getElementById(`cart-qty-${foodId}`).innerText = cart[foodId];
+    
+    // Update subtotal
+    const subtotal = cart[foodId] * price;
+    document.getElementById(`subtotal-${foodId}`).innerText = `₹${subtotal}`;
+    
+    recalculateGrandTotal();
+    syncCartWithSession();
+}
 
-</body>
+// Decrement item in checkout
+function decrementCartItem(foodId, price) {
+    if (cart[foodId] > 0) {
+        cart[foodId]--;
+        
+        if (cart[foodId] === 0) {
+            // Remove row from UI
+            const row = document.getElementById(`cart-item-row-${foodId}`);
+            row.style.opacity = '0';
+            setTimeout(() => {
+                row.remove();
+                
+                // If cart becomes empty, reload page to show empty state
+                if (Object.keys(cart).length === 0) {
+                    window.location.reload();
+                }
+            }, 300);
+            
+            delete cart[foodId];
+        } else {
+            document.getElementById(`cart-qty-${foodId}`).innerText = cart[foodId];
+            const subtotal = cart[foodId] * price;
+            document.getElementById(`subtotal-${foodId}`).innerText = `₹${subtotal}`;
+        }
+        
+        recalculateGrandTotal();
+        syncCartWithSession();
+    }
+}
 
-</html>
+// Recalculate bill amounts dynamically
+function recalculateGrandTotal() {
+    let grandTotal = 0;
+    document.querySelectorAll(".cart-item-row").forEach(row => {
+        const subtotalText = row.querySelector(".cart-item-subtotal").innerText;
+        const subtotal = parseInt(subtotalText.replace("₹", ""));
+        grandTotal += subtotal;
+    });
+    
+    const subtotalLabel = document.getElementById("billSubtotal");
+    const totalLabel = document.getElementById("billTotal");
+    
+    if (subtotalLabel) subtotalLabel.innerText = `₹${grandTotal}`;
+    if (totalLabel) totalLabel.innerText = `₹${grandTotal}`;
+}
+
+// Sync cart with backend Flask session
+function syncCartWithSession() {
+    fetch("{{ url_for('update_cart') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(cart)
+    })
+    .catch(err => console.error("Error syncing cart:", err));
+}
+</script>
+{% endblock %}
