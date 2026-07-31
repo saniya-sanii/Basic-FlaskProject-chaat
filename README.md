@@ -1,55 +1,46 @@
 
+# Bite Buzz🍕– Web Application
 
-# 🚗 Wroom – Web Application
-
-A simple web application built using Flask for the backend and a Bootstrap-powered frontend. Data is managed using SQLite.
-
----
-
-## 🛠 Technologies Used
-
-* **Frontend**: HTML5, CSS3 (Bootstrap), JavaScript (jQuery)
-* **Backend**: Python with Flask
-* **Database**: SQLite
-* **Version Control**: Git
+A simple web application built using Flask for the backend and a Bootstrap-powered frontend. Data is managed using xampp.
 
 ---
 
-## 🗄️ Setting Up the Database
+## 🛠️ Technologies Used
 
-To create the SQLite database, run the following command in your terminal:
-
-```bash
-sqlite3 wroom.db < create_db.sql
-```
-
-This will create a `wroom.db` file using the schema defined in `create_db.sql`.
+* *Frontend*: HTML5, CSS3 (Bootstrap), JavaScript (jQuery)
+* *Backend*: Python with Flask
+* *Database*: xampp
+* *Version Control*: Git
 
 ---
+
 
 ## 🚀 Running the Application
 
 To start the Flask application, simply run:
 
-```bash
-python3 run.py
-```
+bash
+python run.py
 
-Then navigate to `http://localhost:5000` in your browser.
+
+Then navigate to http://127.0.0.1:8080 in your browser.
 
 ---
 
-## 📁 Project Structure (optional)
+## 📁 Project Structure 
 
 You might consider adding this section if helpful:
 
-```
+
 ├── static/
 ├── templates/
 ├── create_db.sql
 ├── run.py
-├── wroom.db
+├── restaurant_db
 ├── README.md
-```
+
 
 ---
+
+
+
